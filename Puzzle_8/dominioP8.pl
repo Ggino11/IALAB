@@ -31,12 +31,12 @@ down (7), left (3), or right (5), so the list is [1, 3, 5, 7].
 
 % index_move(EmptyPosition, ListIndexes):
 
-index_move([0,[1,3]]).
-index_move([1,[0,2,4]]).
-index_move([2,[1,5]]).
-index_move([3,[0,4,6]]).
-index_move([4,[1,3,5,7]]).
-index_move([5,[2,4,8]]).
-index_move([6,[3,7]]).
-index_move([7,[4,6,8]]).
-index_move([8,[5,7]]).
+index_move(0,[1,3]).
+index_move(1,[0,2,4]).
+index_move(2,[1,5]).
+index_move(3,[0,4,6]).
+index_move(4,[1,3,5,7]).
+index_move(5,[2,4,8]).
+index_move(6,[3,7]).
+index_move(7,[4,6,8]).
+index_move(8,[5,7]).
