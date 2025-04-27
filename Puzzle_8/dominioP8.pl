@@ -1,5 +1,4 @@
 /* 
-Considerazioni iniziali: 
 Rappresentazione classica come una lista di 9 elementi letta riga per riga, e con l'elemento vuoto rappresentato dalla lettera 'e' (empty)
 
 7   3   1

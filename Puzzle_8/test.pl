@@ -1,5 +1,5 @@
  % Carica tutti i file necessari
- :- [dominioP8, utils, regole]. % njon capisco peche il warniung se nnon metto il dynamic import per ogni funzione
+ :- [dominioP8, utils, regole, heuristic]. % njon capisco peche il warniung se non metto il dynamic import per ogni funzione
 
 
 % --------------------------------------------
@@ -15,4 +15,7 @@ test :-
     utils:swap_elements([a,b,c,d], 1, 2, SwapResult),
     writeln('Swap b-c:'), writeln(SwapResult),
     regole:move([1,2,3,4,e,5,6,7,8], Next),
-    writeln('Mossa da centro:'), writeln(Next).
+    writeln('Mossa da centro:'), writeln(Next),
+    writeln('Test euristica count_missplaced:'),
+    heuristic:count_missplaced([1,2,3,4,5,6,7,8,e], [1,2,3,4,5,6,7,e,8], 0, MissplacedCount),
+    writeln('Numero di celle fuori posto:'), writeln(MissplacedCount).
