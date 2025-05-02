@@ -15,7 +15,6 @@ Questa implementazione assume come ipotesi iniziale il fatto che il numero possa
 initial_state([7,3,1,5,e,6,8,2,4]).
 final_state([1,2,3,4,5,6,7,8,e]).
 
-
 /* Index_ move defines, for each position (0–8) in the 3x3 puzzle grid, the list of adjacent positions
  with which the empty cell (represented by 'e') can be swapped (listIndexes).
  The grid positions are indexed as follows:
@@ -39,3 +38,11 @@ index_move(5,[2,4,8]).
 index_move(6,[3,7]).
 index_move(7,[4,6,8]).
 index_move(8,[5,7]).
+
+
+%Goal state --> goal state of the puzzle when is equal to the final state
+% trueif the current state is equal to the desired one
+goal(State):-
+  final_state(FinalState),
+  State = FinalState.
+
