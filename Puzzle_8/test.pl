@@ -1,4 +1,4 @@
- % Carica tutti i file necessari
+
  :- [dominioP8, utils, regole, heuristic]. % njon capisco peche il warniung se non metto il dynamic import per ogni funzione
 
 
