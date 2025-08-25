@@ -43,6 +43,36 @@ insegnamento("Progettazione e sviluppo di applicazioni web su dispositivi mobile
 insegnamento("La gestione delle risorse umane", "Lombardo", 10).
 insegnamento("I vincoli giuridici del progetto: diritto del media", "Travostino", 10).
 
+% --- Propedeuticità tra insegnamenti ---
+
+propedeutico(fondamenti_di_ICT_e_paradigmi_di_programmazione, ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web).
+
+propedeutico(ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web,
+             progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_I).
+
+propedeutico(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_I,
+             progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_II).
+
+propedeutico(progettazione_di_basi_di_dati, tecnologie_server_side_per_il_web).
+
+propedeutico(linguaggi_di_markup, ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web).
+
+propedeutico(project_management, marketing_digitale).
+
+propedeutico(marketing_digitale, tecniche_e_strumenti_di_marketing_digitale).
+
+propedeutico(project_management, strumenti_e_metodi_di_interazione_nei_social_media).
+
+propedeutico(project_management, progettazione_grafica_e_design_di_interfacce).
+
+propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, elementi_di_fotografia_digitale).
+
+propedeutico(elementi_di_fotografia_digitale, acquisizione_ed_elaborazione_di_sequenze_di_immagini_digitali).
+
+propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, grafica_3d).
+
+
+
 % Definizione regole per docenti,e ore per insegnamento (estratti automaticamente dagli insegnamenti)
 docente(D) :- insegnamento(_, D, _).
 tot_ore_insegnamento(I, O) :- insegnamento(I, _, O).
