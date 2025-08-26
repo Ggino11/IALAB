@@ -5,8 +5,10 @@
 % DOMINIO
 settimana(1..n_settimane).
 settimana_full_time(7; 16).
+
 giorno_settimana(venerdi;sabato).
 giorno_settimana_full_time(lunedi;martedi;mercoledi;giovedi;venerdi; sabato).
+
 % ore disponibili per ogni giorno
 ore_giorno(lunedi, 8).
 ore_giorno(martedi, 8).
@@ -15,65 +17,7 @@ ore_giorno(giovedi, 8).
 ore_giorno(venerdi, 8).
 ore_giorno(sabato, 6).
 
-% Definizione fatti per gli insegnamenti: insegnamento(Nome, Docente, OreTotali) 
-insegnamento("Project Management", "Muzzetto", 14).
-insegnamento("Fondamenti di ICT e Paradigmi di Programmazione", "Pozzato", 14).
-insegnamento("Linguaggi di markup", "Schifanella Rossano", 20).
-insegnamento("La gestione della qualità", "Tomatis", 10).
-insegnamento("Ambienti di sviluppo e linguaggi client-side per il web", "Micalizio", 20).
-insegnamento("Progettazione grafica e design di interfacce", "Terranova", 10).
-insegnamento("Progettazione di basi di dati", "Mazzei", 20).
-insegnamento("Strumenti e metodi di interazione nei Social media", "Giordani", 14).
-insegnamento("Acquisizione ed elaborazione di immagini statiche - grafica", "Zanchetta", 14).
-insegnamento("Accessibilità e usabilità nella progettazione multimediale", "Gena", 14).
-insegnamento("Marketing digitale", "Muzzetto", 10).
-insegnamento("Elementi di fotografia digitale", "Vargiu", 10).
-insegnamento("Risorse digitali per il progetto: collaborazione e documentazione", "Boniolo", 10).
-insegnamento("Tecnologie server-side per il web", "Damiano", 20).
-insegnamento("Tecniche e strumenti di Marketing digitale", "Zanchetta", 10).
-insegnamento("Introduzione ai social media management", "Suppini", 14).
-insegnamento("Acquisizione ed elaborazione del suono", "Valle", 10).
-insegnamento("Acquisizione ed elaborazione di sequenze di immagini digitali", "Ghidelli", 20).
-insegnamento("Comunicazione pubblicitaria e comunicazione pubblica", "Gabardi", 14).
-insegnamento("Semiologia e multimedialità", "Santangelo", 10).
-insegnamento("Crossmedia: articolazione delle scritture multimediali", "Taddeo", 20).
-insegnamento("Grafica 3D", "Gribaudo", 20).
-insegnamento("Progettazione e sviluppo di applicazioni web su dispositivi mobile I", "Schifanella Rossano", 10).
-insegnamento("Progettazione e sviluppo di applicazioni web su dispositivi mobile II", "Schifanella Claudio", 10).
-insegnamento("La gestione delle risorse umane", "Lombardo", 10).
-insegnamento("I vincoli giuridici del progetto: diritto del media", "Travostino", 10).
-
-% --- Propedeuticità tra insegnamenti ---
-
-propedeutico(fondamenti_di_ICT_e_paradigmi_di_programmazione, ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web).
-
-propedeutico(ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web,
-             progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_I).
-
-propedeutico(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_I,
-             progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_II).
-
-propedeutico(progettazione_di_basi_di_dati, tecnologie_server_side_per_il_web).
-
-propedeutico(linguaggi_di_markup, ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web).
-
-propedeutico(project_management, marketing_digitale).
-
-propedeutico(marketing_digitale, tecniche_e_strumenti_di_marketing_digitale).
-
-propedeutico(project_management, strumenti_e_metodi_di_interazione_nei_social_media).
-
-propedeutico(project_management, progettazione_grafica_e_design_di_interfacce).
-
-propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, elementi_di_fotografia_digitale).
-
-propedeutico(elementi_di_fotografia_digitale, acquisizione_ed_elaborazione_di_sequenze_di_immagini_digitali).
-
-propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, grafica_3d).
-
-
-
-% Definizione regole per docenti,e ore per insegnamento (estratti automaticamente dagli insegnamenti)
+%Definizione regole per docenti,e ore per insegnamento (estratti automaticamente dagli insegnamenti)
 docente(D) :- insegnamento(_, D, _).
 tot_ore_insegnamento(I, O) :- insegnamento(I, _, O).
 
@@ -81,25 +25,82 @@ tot_ore_insegnamento(I, O) :- insegnamento(I, _, O).
 giorno_master(S, G, O) :- settimana(S), not settimana_full_time(S), giorno_settimana(G), ore_giorno(G, O).
 giorno_master(S, G, O) :- settimana_full_time(S), giorno_settimana_full_time(G), ore_giorno(G, O).
 
-%primo vincolo
-% Regola di assegnazione: allo stesso giorno(2,3,4 ore per giorno)
-{ assegna(I, S, G, O) : insegnamento(I, _, _), giorno_master(S, G, MaxOre), O = 2..4, O <= MaxOre }.
+% durata ammissibile per ogni lezione, primo vincolo
+durata_lezione(2..4).
+
+% Definizione fatti per gli insegnamenti: insegnamento(Nome, Docente, OreTotali) 
+insegnamento(project_management,                                                    muzzetto,    14).
+insegnamento(fondamenti_di_ICT_e_paradigmi_di_programmazione,                       pozzato,     14).
+insegnamento(linguaggi_di_markup,                                                   gena,        20).
+insegnamento(la_gestione_della_qualita,                                             tomatis,     10).
+insegnamento(ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web,               micalizio,   20).
+insegnamento(progettazione_grafica_e_design_di_interfacce,                          terranova,   10).
+insegnamento(progettazione_di_basi_di_dati,                                         mazzei,      20).
+insegnamento(strumenti_e_metodi_di_interazione_nei_social_media,                    giordani,    14).
+insegnamento(acquisizione_ed_elaborazione_di_immagini_statiche_grafica,             zanchetta,   14).
+insegnamento(accessibilita_e_usabilita_nella_progettazione_multimediale,            gena,        14).
+insegnamento(marketing_digitale,                                                    muzzetto,    10).
+insegnamento(elementi_di_fotografia_digitale,                                       vargiu,      10).
+insegnamento(risorse_digitali_per_il_progetto_collaborazione_e_documentazione,      boniolo,     10).
+insegnamento(tecnologie_server_side_per_il_web,                                     damiano,     20).
+insegnamento(tecniche_e_strumenti_di_marketing_digitale,                            zanchetta,   10).
+insegnamento(introduzione_al_social_media_management,                                suppini,     14).
+insegnamento(acquisizione_ed_elaborazione_del_suono,                                valle,       10).
+insegnamento(acquisizione_ed_elaborazione_di_sequenze_di_immagini_digitali,         ghidelli,    20).
+insegnamento(comunicazione_pubblicitaria_e_comunicazione_pubblica,                  gabardi,     14).
+insegnamento(semiologia_e_multimedialita,                                           santangelo,  10).
+insegnamento(crossmedia_articolazione_delle_scritture_multimediali,                 taddeo,      20).
+insegnamento(grafica_3d,                                                            gribaudo,    20).
+insegnamento(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobile_I,  pozzato,     10).
+insegnamento(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobile_II, schifanella, 10).
+insegnamento(la_gestione_delle_risorse_umane,                                       lombardo,    10).
+insegnamento(i_vincoli_giuridici_del_progetto_diritto_dei_media,                    travostino,  10).
+
+% Propedeuticità tra insegnamenti: propedeutico(Insegnamento_precedente, Insegnamento_successivo)
+
+propedeutico(fondamenti_di_ICT_e_paradigmi_di_programmazione, ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web).
+
+propedeutico(ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web,
+ progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_I).
+propedeutico(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_I,
+             progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobili_II).
+propedeutico(progettazione_di_basi_di_dati, tecnologie_server_side_per_il_web).
+propedeutico(linguaggi_di_markup, ambienti_di_sviluppo_e_linguaggi_client_side_per_il_web).
+propedeutico(project_management, marketing_digitale).
+propedeutico(marketing_digitale, tecniche_e_strumenti_di_marketing_digitale).
+propedeutico(project_management, strumenti_e_metodi_di_interazione_nei_social_media).
+propedeutico(project_management, progettazione_grafica_e_design_di_interfacce).
+propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, elementi_di_fotografia_digitale).
+propedeutico(elementi_di_fotografia_digitale, acquisizione_ed_elaborazione_di_sequenze_di_immagini_digitali).
+propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, grafica_3d).
+
+% lezione(Settimana, Giorno, Ore, Insegnamento, Docente)
+0 { lezione(S,G,O,I,D) : durata(O), insegnamento(I,D,_) } 1 :- giorno_master(S,G,_).
+
+% non superare le ore disponibili del giorno
+:- giorno_master(S,G,Omax), #sum{Ore,I,D : lezione(S,G,Ore,I,D)} > Omax.
+
+% ogni insegnamento deve coprire esattamente le ore totali
+:- insegnamento(I,_,OreTot), OreTot != #sum{Ore,S,G : lezione(S,G,Ore,I,_)}.
 
 %secondo vincolo
 % Vincolo stesso docente non può svolgere più di 4 ore di lezione di un giorno (max 4 ore/giorno)
-:- giorno_master(S, G, _), 
-   docente(D), 
-   #sum{ O : assegna(I, S, G, O), insegnamento(I, D, _) } > max_ore_docente_pgiorno.
+:- giorno_master(S, G, _), docente(D), 
+   #sum{ Ore, I : lezione(S, G, Ore,I, Docente)} > max_ore_docente_pgiorno.
 
-% Vincoli di sicurezza sulle ore
-:- assegna(_, _, _, O), O < 2.    % No meno di 2 ore
-:- assegna(_, _, _, O), O > 4.    % No più di 4 ore          
+% vincolo presentazione master prime 2 ore settimana 1, == venerdì
+lezione(1,venerdi,2,presentazione_master,nessun_docente).
 
-%#show docente/1.
-%#show tot_ore_insegnamento/2.
-%#show ore_giorno/2.
-%#show giorno_master/3.
-#show assegna/4.
+% vincolo: project management deve finire entro settimana 7 == prima settimana full time
+:- lezione(S,_,_,project_management,_), S > 7.
 
+% prima e ultima lezione di un corso per gestire propedeuticità
+prima_lezione(I,S,G) :- lezione(S,G,_,I,_), not (lezione(S2,G2,_,I,_), precede(S2,G2,S,G)).
+ultima_lezione(I,S,G) :- lezione(S,G,_,I,_), not (lezione(S2,G2,_,I,_), precede(S,G,S2,G2)).
 
+% accessibilità deve iniziare prima che finisca linguaggi di markup
+:- ultima_lezione(linguaggi_di_markup,S1,G1),
+   prima_lezione(accessibilita_e_usabilita_nella_progettazione_multimediale,S2,G2),
+   precede(S1,G1,S2,G2).
 
+% not working i dont know why    
