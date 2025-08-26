@@ -17,6 +17,13 @@ ore_giorno(giovedi, 8).
 ore_giorno(venerdi, 8).
 ore_giorno(sabato, 6).
 
+% ordine dei giorni della settimana per confronto tra giorni
+precede_giorno(lunedi, martedi).
+precede_giorno(martedi, mercoledi). 
+precede_giorno(mercoledi, giovedi).
+precede_giorno(giovedi, venerdi).   
+precede_giorno(venerdi, sabato).
+
 %Definizione regole per docenti,e ore per insegnamento (estratti automaticamente dagli insegnamenti)
 docente(D) :- insegnamento(_, D, _).
 tot_ore_insegnamento(I, O) :- insegnamento(I, _, O).
@@ -25,7 +32,7 @@ tot_ore_insegnamento(I, O) :- insegnamento(I, _, O).
 giorno_master(S, G, O) :- settimana(S), not settimana_full_time(S), giorno_settimana(G), ore_giorno(G, O).
 giorno_master(S, G, O) :- settimana_full_time(S), giorno_settimana_full_time(G), ore_giorno(G, O).
 
-% durata ammissibile per ogni lezione, primo vincolo
+% V1: durata ammissibile per ogni lezione
 durata_lezione(2..4).
 
 % Definizione fatti per gli insegnamenti: insegnamento(Nome, Docente, OreTotali) 
@@ -44,7 +51,7 @@ insegnamento(elementi_di_fotografia_digitale,                                   
 insegnamento(risorse_digitali_per_il_progetto_collaborazione_e_documentazione,      boniolo,     10).
 insegnamento(tecnologie_server_side_per_il_web,                                     damiano,     20).
 insegnamento(tecniche_e_strumenti_di_marketing_digitale,                            zanchetta,   10).
-insegnamento(introduzione_al_social_media_management,                                suppini,     14).
+insegnamento(introduzione_al_social_media_management,                               suppini,     14).
 insegnamento(acquisizione_ed_elaborazione_del_suono,                                valle,       10).
 insegnamento(acquisizione_ed_elaborazione_di_sequenze_di_immagini_digitali,         ghidelli,    20).
 insegnamento(comunicazione_pubblicitaria_e_comunicazione_pubblica,                  gabardi,     14).
@@ -55,6 +62,8 @@ insegnamento(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobile_
 insegnamento(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobile_II, schifanella, 10).
 insegnamento(la_gestione_delle_risorse_umane,                                       lombardo,    10).
 insegnamento(i_vincoli_giuridici_del_progetto_diritto_dei_media,                    travostino,  10).
+% per la modellazione del quarto vincolo 
+insegnamento(recupero,                                                              nessun_docente, 12).
 
 % Propedeuticità tra insegnamenti: propedeutico(Insegnamento_precedente, Insegnamento_successivo)
 
@@ -74,8 +83,8 @@ propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, elementi
 propedeutico(elementi_di_fotografia_digitale, acquisizione_ed_elaborazione_di_sequenze_di_immagini_digitali).
 propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, grafica_3d).
 
-% lezione(Settimana, Giorno, Ore, Insegnamento, Docente)
-0 { lezione(S,G,O,I,D) : durata(O), insegnamento(I,D,_) } 1 :- giorno_master(S,G,_).
+% lezione(Settimana, Giorno, Ore, Insegnamento, Docente) 
+0 { lezione(S,G,O,I,D) : durata_lezione(O), insegnamento(I,D,_) } 1 :- giorno_master(S,G,_).
 
 % non superare le ore disponibili del giorno
 :- giorno_master(S,G,Omax), #sum{Ore,I,D : lezione(S,G,Ore,I,D)} > Omax.
@@ -83,24 +92,60 @@ propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, grafica_
 % ogni insegnamento deve coprire esattamente le ore totali
 :- insegnamento(I,_,OreTot), OreTot != #sum{Ore,S,G : lezione(S,G,Ore,I,_)}.
 
-%secondo vincolo
-% Vincolo stesso docente non può svolgere più di 4 ore di lezione di un giorno (max 4 ore/giorno)
+% V1: stesso docente non può svolgere più di 4 ore di lezione di un giorno (max 4 ore/giorno)
 :- giorno_master(S, G, _), docente(D), 
    #sum{ Ore, I : lezione(S, G, Ore,I, Docente)} > max_ore_docente_pgiorno.
 
-% vincolo presentazione master prime 2 ore settimana 1, == venerdì
+% V3: presentazione master prime 2 ore settimana 1, == venerdì
 lezione(1,venerdi,2,presentazione_master,nessun_docente).
 
-% vincolo: project management deve finire entro settimana 7 == prima settimana full time
+% V4: il calendario deve prevedere almeno 6 blocchi liberi da 2 ore ciascuno per recuperi
+:- lezione(S,G,O,recupero,_), O != 2.
+
+% V5: project management deve finire entro settimana 7 == prima settimana full time
 :- lezione(S,_,_,project_management,_), S > 7.
-
+%############################## PROBLEMA ENTRA IN LOOP
 % prima e ultima lezione di un corso per gestire propedeuticità
-prima_lezione(I,S,G) :- lezione(S,G,_,I,_), not (lezione(S2,G2,_,I,_), precede(S2,G2,S,G)).
-ultima_lezione(I,S,G) :- lezione(S,G,_,I,_), not (lezione(S2,G2,_,I,_), precede(S,G,S2,G2)).
+prima_lezione(I,S,G) :- lezione(S,G,_,I,_), not lezione(S2,G2,_,I,_) : precede(S2,G2,S,G).
 
-% accessibilità deve iniziare prima che finisca linguaggi di markup
+ultima_lezione(I,S,G) :- lezione(S,G,_,I,_), not lezione(S2,G2,_,I,_) : precede(S,G,S2,G2).
+
+% confronto tra giorni in settimane diverse
+precede(S1,G1,S2,G2) :- 
+   giorno_master(S1,G1,_),
+   giorno_master(S2,G2,_),
+   S1 < S2.
+
+% confronto tra giorni in stessa settimana usando precede_giorno riga 25
+precede(S1,G1,S2,G2) :-
+   giorno_master(S1,G1,_),
+   giorno_master(S2,G2,_),
+   S1 = S2,
+   precede_giorno(G1,G2).
+
+% V6: accessibilità deve iniziare prima che finisca linguaggi di markup
+% ultima_lezione trova ultima occorrenza della lezione linguaggi di markup e la prima di accessibilità 
 :- ultima_lezione(linguaggi_di_markup,S1,G1),
    prima_lezione(accessibilita_e_usabilita_nella_progettazione_multimediale,S2,G2),
+   % non ci può essere il caso che la prima lezione di accessibilità sia dopo l'ultima di linguaggi di markup
    precede(S1,G1,S2,G2).
 
-% not working i dont know why    
+%V7: la distanza tra la prima e l'ultima lezione di ciascun insegnamento non deve superare le 8 settimane
+% NEED TESTING NON SO SE SI POSSA FARE LA DIFFERENZA TRA VARIABILI IN CLINGO 
+:- prima_lezione(I,S1,G1),
+   ultima_lezione(I,S2,G2),
+   S2 - S1 > 8.
+
+% V8:le ore di tecnologie server side  devono essre organizzate in 5 blocchi da 4 ore ciascuno
+:- lezione(S,G,O,tecnologie_server_side_per_il_web,_),O != 4.
+
+:- #count{ S,G : lezione(S,G,4,tecnologie_server_side_per_il_web,_)} != 5.
+
+% V9: le prime lezione degli insegnamenti "Crossmedia articolazione delle scritture multimediali" e "Introduzione al social media management" devono essere collocate nella seconda settimana full tme 
+:- lezione(S,_,_,crossmedia_articolazione_delle_scritture_multimediali,_), lezione(S,_,_,introduzione_al_social_media_management,_),S < 16.
+
+% V10: rispetta propedeuticità tra insegnamenti
+:- propedeutico(CorsoPrec, CorsoSucc),
+   ultima_lezione(CorsoPrec, S1, G1),
+   prima_lezione(CorsoSucc, S2, G2),
+   not precede(S1,G1,S2,G2).
