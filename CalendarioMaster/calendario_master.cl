@@ -57,8 +57,8 @@ insegnamento(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobile_
 insegnamento(progettazione_e_sviluppo_di_applicazioni_web_su_dispositivi_mobile_II, schifanella, 10).
 insegnamento(la_gestione_delle_risorse_umane,                                       lombardo,    10).
 insegnamento(i_vincoli_giuridici_del_progetto_diritto_dei_media,                    travostino,  10).
-%   VR 4: il calendario deve prevedere almeno 6 blocchi liberi di 2 ore ciascuno
-                %   per eventuali recuperi di lezioni annullate o rinviate
+% VR 4: il calendario deve prevedere almeno 6 blocchi liberi di 2 ore ciascuno
+% per eventuali recuperi di lezioni annullate o rinviate
 insegnamento(recupero,                                                              nessun_docente, 12).
         
 
@@ -91,7 +91,9 @@ durata_lezione(2..4).
 lezione(1,venerdi,2,presentazione_master,nessun_docente).
 
 % V4: il calendario deve prevedere almeno 6 blocchi liberi da 2 ore ciascuno per recuperi
-:- insegnamento(recupero, _, OreRecupero), OreRecupero != #sum{NumOre, S, G : lezione(S, G, NumOre, recupero, _)}.
+% :- insegnamento(recupero, _, OreRecupero), OreRecupero != #sum{NumOre, S, G : lezione(S, G, NumOre, recupero, _)}.
+:- lezione(S,G,O,recupero,_),O != 2.
+:- #count{ S,G : lezione(S,G,2,recupero,_)} != 6.
 
 % V5: project management deve finire entro settimana 7 == prima settimana full time
 :- lezione(S,_,_,project_management,_), S > 7.
