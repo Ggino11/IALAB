@@ -137,43 +137,38 @@ class LabirintoCreator:
         if self.start_pos is None:
             messagebox.showerror("Errore", "Devi prima impostare un punto di partenza!")
             return
-        
+
         if not self.exit_positions:
             messagebox.showerror("Errore", "Devi prima impostare almeno un'uscita!")
             return
-        
-        # Crea la cartella se non esiste
+
         os.makedirs('Labirinto', exist_ok=True)
-        
-        # Genera il file di dominio Prolog
+
         with open('Labirinto/labirinto.pl', 'w') as f:
             f.write("/* Dominio del labirinto generato tramite python */\n\n")
-            
-            # Definisci il numero di righe e colonne
+
             f.write(f"num_righe({self.size}).\n")
             f.write(f"num_colonne({self.size}).\n\n")
-            
-            # Definisci la posizione iniziale (aggiusta le coordinate per la numerazione 1-based)
-            start_x = self.start_pos[1] + 1
-            start_y = self.start_pos[0] + 1
+
+            # Scambia le coordinate X e Y per corrispondere al formato pos(riga, colonna)
+            start_y = self.start_pos[1] + 1
+            start_x = self.start_pos[0] + 1
             f.write(f"iniziale(pos({start_x},{start_y})).\n\n")
-            
-            # Definisci le posizioni finali (uscite)
+
             f.write("% Posizioni finali (uscite)\n")
             for exit_pos in self.exit_positions:
-                exit_x = exit_pos[1] + 1
-                exit_y = exit_pos[0] + 1
+                exit_y = exit_pos[1] + 1
+                exit_x = exit_pos[0] + 1
                 f.write(f"finale(pos({exit_x},{exit_y})).\n")
             f.write("\n")
-            
-            # Definisci le celle occupate (ostacoli)
+
             f.write("% Celle occupate (ostacoli)\n")
             for i in range(self.size):
                 for j in range(self.size):
-                    if self.grid[i, j] == 1:  # Ostacolo
-                        # Converti a coordinate 1-based
-                        obst_x = j + 1
-                        obst_y = i + 1
+                    if self.grid[i, j] == 1:
+                        # Scambia le coordinate X e Y
+                        obst_y = j + 1
+                        obst_x = i + 1
                         f.write(f"occupata(pos({obst_x},{obst_y})).\n")
         
         messagebox.showinfo("Successo", "File 'Labirinto/labirinto.pl' generato con successo!")
