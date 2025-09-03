@@ -17,5 +17,5 @@ test :-
     regole:move([1,2,3,4,e,5,6,7,8], Next),
     writeln('Mossa da centro:'), writeln(Next),
     writeln('Test euristica count_missplaced:'),
-    heuristic:count_missplaced([1,2,3,4,5,6,7,8,e], [1,2,3,4,5,6,7,e,8], 0, MissplacedCount),
+    heuristic:count_missplaced([1,2,3,4,5,6,7,8,e], [7,3,1,5,e,6,8,2,4], 0, MissplacedCount),
     writeln('Numero di celle fuori posto:'), writeln(MissplacedCount).
