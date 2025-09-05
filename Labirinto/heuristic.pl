@@ -23,7 +23,7 @@ manhattan(CurrentPos, MinDistance) :-
     min_list(Distances, MinDistance).
 
 % Calcola la distanza di Manhattan tra due posizioni
-manhattan_distance(pos(R1, C1), pos(R2, C2), Distance) :-
-    Distance is abs(R1 - R2) + abs(C1 - C2).
+manhattan_distance(pos(CurrentRow, CurrentCol), pos(GoalRow, GoalCol), Distance) :-
+    Distance is abs(CurrentRow - GoalRow) + abs(CurrentCol - GoalCol).
 
 % Uso la built-in min_list/2 invece di distanza_min/2 devo poi rimuoverla

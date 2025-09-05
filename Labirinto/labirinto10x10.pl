@@ -10,7 +10,7 @@ finale(pos(10,10)).
 finale(pos(1,8)).
 
 % Celle occupate (ostacoli)
-% occupata(pos(4,6)).
+%occupata(pos(3,7)).
 occupata(pos(1,1)).
 occupata(pos(1,6)).
 occupata(pos(1,9)).
@@ -36,4 +36,5 @@ occupata(pos(9,7)).
 occupata(pos(9,9)).
 occupata(pos(10,7)).
 occupata(pos(10,9)).
+%occupata(pos(9,10)).
                   

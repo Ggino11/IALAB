@@ -12,7 +12,7 @@ count_missplaced([HeadCS|TailCS], [HeadFS|TailFS], Count, NewResult) :-
 count_missplaced([_|TailCS],[_|TailFS], Count, Result):-
     % if the head of the lists are equal skip the heads [_] and keep the recursion going on the tails of the 2 lists
     count_missplaced(TailCS,TailFS, Count, Result).
-%forse meglio aggiungere una wrapper per far diventare count missplaced un predicato /2 e non /4 (?)
+
 wrapper_count_missplaced(CurrentState, H):-
     final_state(FinalState),
-    count_missplaced(CurrentState,FinalState, 0, H). % H heuristic value result of count missplaced
+    count_missplaced(CurrentState,FinalState, 0, H). % H heuristic value result of count missplacedv
