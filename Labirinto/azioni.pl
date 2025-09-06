@@ -1,3 +1,4 @@
+
 applicabile(nord, pos(Riga, Colonna)):-
     Riga > 1,
     RigaSopra is Riga - 1,
@@ -22,6 +23,7 @@ applicabile(ovest, pos(Riga, Colonna)):-
 
 
 
+% trasforma(Azione,StatoAttuale,StatoNuovo)
 trasforma(nord,pos(Riga, Colonna), pos(RigaSopra, Colonna)):-
     RigaSopra is Riga - 1.
 

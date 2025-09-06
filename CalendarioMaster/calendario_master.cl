@@ -81,11 +81,8 @@ durata_lezione(2..4).
 :- insegnamento(NomeInsegnamento,_, OreTotali), 
     OreTotali != #sum{NumOre, S, G : lezione(S, G, NumOre, NomeInsegnamento, _)}.
 
-
 % V1: stesso docente non può svolgere più di 4 ore di lezione di un giorno (max 4 ore/giorno)
 :- docente(Docente), Docente != nessun_docente, settimana(S), giorno(G), #sum{ Ore, NomeInsegnamento : lezione(S, G, Ore, NomeInsegnamento, Docente)} > max_ore_docente_pgiorno.
-
-
 
 % V3: presentazione master prime 2 ore settimana 1, == venerdì
 lezione(1,venerdi,2,presentazione_master,nessun_docente).
@@ -111,7 +108,6 @@ ultima_lezione_markup(SUlt, GUlt) :-
 
 
 %V7: la distanza tra la prima e l'ultima lezione di ciascun insegnamento non deve superare le 8 settimane
-% NEED TESTING NON SO SE SI POSSA FARE LA DIFFERENZA TRA VARIABILI IN CLINGO 
 :- insegnamento(Nome, _, _),
     lezione(S1, _, _, Nome, _), lezione(S2, _, _, Nome, _),
     S2 - S1 > 8.
@@ -148,7 +144,6 @@ propedeutico(acquisizione_ed_elaborazione_di_immagini_statiche_grafica, grafica_
     prima_lezione(CorsoSucc, SSucc, GSucc),
     not precede(SPrec, GPrec, SSucc, GSucc).
 
-%   Funzioni di supporto per prima e ultima lezione
 prima_lezione(Corso, S, G) :- 
     lezione(S, G, _, Corso, _),
     not lezione(S2, G2, _, Corso, _) : precede(S2, G2, S, G).
