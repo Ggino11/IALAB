@@ -34,10 +34,13 @@ zone_continentali(europa;america_nord_centro;america_sud;asia;africa;oceania).
 
 2  { appartiene(S,oceania) : squadra(S) } 2.
 
+1 { appartiene(S, Z) : squadra(S), zone_continentali(Z) } 1 :- squadra(S).
+
+
 
 % CATEGORIA
 % assegno per ogni squadra una categoria
-%1{ assegna(S,C) : categoria(C)}1 :- squadra(S).
+1{ assegna(S,C) : categoria(C)}1 :- squadra(S).
 percat{ assegna(S,C) : squadra(S)}percat :- categoria(C).
 
 
@@ -76,8 +79,18 @@ coppia(S1,S2,G) :- inGirone(S1,G), inGirone(S2,G), S1 < S2.
 % CALENDARIO
 calendario(G,T,S1,S2) :- gioca(S1,S2,G,T).
 
+% Predicato che mostra squadra, girone, categoria e zona
+mostra_info(S, G, C, Z) :- 
+    squadra(S),
+    girone(G),
+    categoria(C),
+    assegna(S, C),
+    appartiene(S, Z),
+    inGirone(S, G).
+    
+#show mostra_info/4.
 
 % #show assegna/2.
 % #show inGirone/2.
 % #show appartiene/2.
-#show calendario/4.
+%#show calendario/4.
