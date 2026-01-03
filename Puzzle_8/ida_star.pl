@@ -1,5 +1,4 @@
 %:- consult(utils,regole,heuristic,dominioP8).
-:- dynamic initial_state/1, wrapper_count_missplaced/2, print_state/1, goal/1, move/2, print_final_solution/1.
 :- set_prolog_flag(answer_write_options, [quoted(true), portray(true), max_depth(0)]). % to avoid abbreviation in the outpu lists
 
 % iterative deeping A* search alg f(n) = g(n) + h(n)

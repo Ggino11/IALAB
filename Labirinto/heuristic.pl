@@ -15,15 +15,20 @@
 %     %trova la distanza minima tra tutte quelle calcolate.
 %     distanza_min(DistancesList, Distance).
 % Heuristic --> Distanza di Manhattan all'obiettivo più vicino
+:- dynamic manhattan_cache/2. 
+manhattan(CurrentPos, MinDistance) :-
+    manhattan_cache(CurrentPos, MinDistance), !.
 manhattan(CurrentPos, MinDistance) :-
     findall(Dist, 
            (finale(GoalPos), 
             manhattan_distance(CurrentPos, GoalPos, Dist)), 
            Distances),
-    min_list(Distances, MinDistance).
+    min_list(Distances, MinDistance),
+     assertz(manhattan_cache(CurrentPos, MinDistance)).
 
 % Calcola la distanza di Manhattan tra due posizioni
 manhattan_distance(pos(CurrentRow, CurrentCol), pos(GoalRow, GoalCol), Distance) :-
     Distance is abs(CurrentRow - GoalRow) + abs(CurrentCol - GoalCol).
 
 % Uso la built-in min_list/2 invece di distanza_min/2 devo poi rimuoverla
+

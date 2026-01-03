@@ -1,6 +1,6 @@
 % main.pl
 % Confronto tra IDA* e A* per la risoluzione del labirinto
-
+:- set_prolog_flag(stack_limit, 16_147_483_648). 
 % Funzione principale
 main :-
     writeln('=== LABIRINTO SOLVER ==='), nl,
@@ -44,8 +44,8 @@ main :-
      
     % Confronto finale
     writeln('=== CONFRONTO FINALE ==='),
-    (var(Path1) -> writeln('IDA*: Nessuna soluzione') ; format('IDA*: ~w passi, ~3f secondi~n', [Cost1, Time1])),
-    (var(Path2) -> writeln('A*: Nessuna soluzione') ; format('A*: ~w passi, ~3f secondi~n', [Cost2, Time2])).
+    (var(Path1) -> writeln('IDA*: NO SOLUTION') ; format('IDA*: ~w passi, ~3f secondi~n', [Cost1, Time1])),
+    (var(Path2) -> writeln('A*: NO SOLUTION') ; format('A*: ~w passi, ~3f secondi~n', [Cost2, Time2])).
 
 % % Esegui il confronto
 % run_comparison :-

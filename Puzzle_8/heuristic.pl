@@ -1,5 +1,5 @@
-% Heuristic file for the problem
-:-dynamic final_state/1. % sempre stesso problema non mi prende ill predicato se non lo metto tramite dynamic 
+         % Heuristic file for the problem
+%:-dynamic final_state/1. % sempre stesso problema non mi prende ill predicato se non lo metto tramite dynamic 
 
 % Heuristic function to calculate the numnber of missplacede cells in the puzzle
 count_missplaced([],[],Count, Result) :-

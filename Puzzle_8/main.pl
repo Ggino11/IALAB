@@ -1,6 +1,3 @@
-% main.pl
-% Simple main program to run IDA* and A* algorithms
-
 % Load all required modules
 :- [dominioP8, utils, regole, heuristic, ida_star, a_star].
 

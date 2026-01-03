@@ -1,11 +1,10 @@
 
 % A* algorithm for the 8-puzzle problem
-
-:- dynamic initial_state/1, wrapper_count_missplaced/2, print_grid/1, goal/1, move/2, print_final_solution/1.
+% :- dynamic initial_state/1, wrapper_count_missplaced/2, print_grid/1, goal/1, move/2, print_final_solution/1.
 :- set_prolog_flag(answer_write_options, [quoted(true), portray(true), max_depth(0)]).
 
 % Entry point for A* search
-% a_star(-SolutionPath, -Cost)
+% a_star(SolutionPath, Cost)
 % Launches A* search from initial state
 a_star(SolutionPath, Cost) :-
     initial_state(InitialState),
@@ -15,7 +14,7 @@ a_star(SolutionPath, Cost) :-
     a_star_search([[F, 0, [InitialState], InitialState]], [], SolutionPath, Cost).
 
 % Main A* search loop
-% a_star_search(+OpenList, +ClosedList, -SolutionPath, -Cost)
+% a_star_search(OpenList, ClosedList, SolutionPath, Cost)
 % OpenList: list of [F, G, Path, State] sorted by F cost
 % ClosedList: list of already explored states
 a_star_search([[_, G, Path, CurrentState]|_], _, SolutionPath, Cost) :-

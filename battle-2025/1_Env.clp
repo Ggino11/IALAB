@@ -1,4 +1,4 @@
-(defmodule ENV (import MAIN ?ALL) (export deftemplate k-cell k-per-row  k-per-col))
+(defmodule ENV (import MAIN ?ALL) (export deftemplate cell k-cell k-per-row  k-per-col))
 
 
 (deftemplate cell

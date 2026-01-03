@@ -8,16 +8,20 @@ import os
 from PIL import Image
 
 class LabirintoCreator:
-    def __init__(self, size=10):
-        self.size = size
-        self.grid = np.zeros((size, size), dtype=int)  # 0 = libero, 1 = ostacolo, 2 = uscita, 3 = start
+    def __init__(self):
+        self.size = self.get_grid_size()
+        if self.size is None:
+            return  # L'utente ha annullato
+            
+        self.grid = np.zeros((self.size, self.size), dtype=int)
         self.start_pos = None
-        self.exit_positions = []  # Lista per multiple uscite
-        self.mode = "ostacolo"  # Modalità predefinita: aggiungi ostacoli
+        self.exit_positions = []
+        self.mode = "ostacolo"
+        self.mouse_pressed = False
         
         # Crea la finestra principale
         self.root = tk.Tk()
-        self.root.title("Creatore Labirinto")
+        self.root.title(f"Creatore Labirinto {self.size}x{self.size}")
         self.root.geometry("800x700")
         
         # Crea il frame per la griglia
@@ -35,7 +39,9 @@ class LabirintoCreator:
         self.setup_plot()
         
         # Collega gli eventi del mouse
-        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+        self.fig.canvas.mpl_connect('button_press_event', self.on_click_press)
+        self.fig.canvas.mpl_connect('button_release_event', self.on_click_release)
+        self.fig.canvas.mpl_connect('motion_notify_event', self.on_motion)
         
         # Crea il frame per i pulsanti
         self.frame_buttons = tk.Frame(self.root)
@@ -54,6 +60,9 @@ class LabirintoCreator:
         self.btn_pulisci = tk.Button(self.frame_buttons, text="Pulisci Cella", command=lambda: self.set_mode("pulisci"))
         self.btn_pulisci.pack(side=tk.LEFT, padx=5)
         
+        self.btn_ridimensiona = tk.Button(self.frame_buttons, text="Ridimensiona", command=self.resize_grid)
+        self.btn_ridimensiona.pack(side=tk.LEFT, padx=5)
+        
         self.btn_genera = tk.Button(self.frame_buttons, text="Genera File Prolog", command=self.generate_prolog_file)
         self.btn_genera.pack(side=tk.RIGHT, padx=5)
         
@@ -64,30 +73,54 @@ class LabirintoCreator:
         self.btn_esci.pack(side=tk.RIGHT, padx=5)
         
         # Etichetta per lo stato
-        self.lbl_status = tk.Label(self.root, text="Modalità: Aggiungi Ostacoli - Clicca sulla griglia per aggiungere ostacoli")
+        self.lbl_status = tk.Label(self.root, text="Modalità: Aggiungi Ostacoli - Clicca o trascina per aggiungere ostacoli")
         self.lbl_status.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # Etichetta per le dimensioni
+        self.lbl_size = tk.Label(self.root, text=f"Dimensione: {self.size}x{self.size}")
+        self.lbl_size.pack(side=tk.BOTTOM, fill=tk.X)
         
         self.root.mainloop()
     
-    def set_mode(self, mode):
-        self.mode = mode
-        if mode == "ostacolo":
-            self.lbl_status.config(text="Modalità: Aggiungi Ostacoli - Clicca sulla griglia per aggiungere ostacoli")
-        elif mode == "start":
-            self.lbl_status.config(text="Modalità: Imposta Start - Clicca sulla griglia per impostare il punto di partenza")
-        elif mode == "exit":
-            self.lbl_status.config(text="Modalità: Aggiungi Uscita - Clicca sulla griglia per aggiungere un'uscita")
-        elif mode == "pulisci":
-            self.lbl_status.config(text="Modalità: Pulisci Cella - Clicca sulla griglia per pulire la cella")
+    def get_grid_size(self):
+        """Chiede all'utente la dimensione della griglia"""
+        root = tk.Tk()
+        root.withdraw()
+        
+        while True:
+            size_str = simpledialog.askstring(
+                "Dimensione Labirinto", 
+                "Inserisci la dimensione del labirinto (max 250):", 
+                initialvalue="10"
+            )
+            
+            if size_str is None:
+                return None
+                
+            try:
+                size = int(size_str)
+                if 1 <= size <= 250:
+                    return size
+                else:
+                    messagebox.showerror("Errore", "La dimensione deve essere tra 1 e 250!")
+            except ValueError:
+                messagebox.showerror("Errore", "Inserisci un numero valido!")
     
     def setup_plot(self):
         self.ax.clear()
         self.ax.set_xlim(0, self.size)
         self.ax.set_ylim(0, self.size)
-        self.ax.set_xticks(np.arange(0, self.size+1, 1))
-        self.ax.set_yticks(np.arange(0, self.size+1, 1))
-        self.ax.grid(True)
-        self.ax.set_title("Labirinto - Seleziona le celle")
+        
+        # Rimuovi i numeri dagli assi
+        self.ax.set_xticks([])
+        self.ax.set_yticks([])
+        
+        # Aggiungi griglia senza numeri
+        self.ax.set_xticks(np.arange(0, self.size+1, 1), minor=True)
+        self.ax.set_yticks(np.arange(0, self.size+1, 1), minor=True)
+        self.ax.grid(which='minor', color='gray', linestyle='-', linewidth=0.5)
+        
+        self.ax.set_title(f"Labirinto {self.size}x{self.size}")
         
         # Disegna la griglia
         for i in range(self.size):
@@ -101,7 +134,22 @@ class LabirintoCreator:
         
         self.canvas.draw()
     
-    def on_click(self, event):
+    def on_click_press(self, event):
+        """Quando il mouse viene premuto"""
+        self.mouse_pressed = True
+        self.process_cell(event)
+    
+    def on_click_release(self, event):
+        """Quando il mouse viene rilasciato"""
+        self.mouse_pressed = False
+    
+    def on_motion(self, event):
+        """Quando il mouse si muove (trascinamento)"""
+        if self.mouse_pressed:
+            self.process_cell(event)
+    
+    def process_cell(self, event):
+        """Elabora la cella cliccata"""
         if event.xdata is None or event.ydata is None:
             return
         
@@ -112,19 +160,17 @@ class LabirintoCreator:
             if self.mode == "ostacolo":
                 self.grid[row, col] = 1
             elif self.mode == "start":
-                # Rimuovi il vecchio start se esiste
                 if self.start_pos:
                     old_row, old_col = self.start_pos
-                    if self.grid[old_row, old_col] == 3:  # Se era start
+                    if self.grid[old_row, old_col] == 3:
                         self.grid[old_row, old_col] = 0
                 self.grid[row, col] = 3
                 self.start_pos = (row, col)
             elif self.mode == "exit":
-                # Aggiungi una nuova uscita
                 self.grid[row, col] = 2
-                self.exit_positions.append((row, col))
+                if (row, col) not in self.exit_positions:
+                    self.exit_positions.append((row, col))
             elif self.mode == "pulisci":
-                # Pulisci la cella
                 if (row, col) == self.start_pos:
                     self.start_pos = None
                 elif (row, col) in self.exit_positions:
@@ -132,6 +178,46 @@ class LabirintoCreator:
                 self.grid[row, col] = 0
             
             self.setup_plot()
+    
+    def resize_grid(self):
+        """Ridimensiona la griglia"""
+        new_size = self.get_grid_size()
+        if new_size is None or new_size == self.size:
+            return
+            
+        old_size = self.size
+        self.size = new_size
+        new_grid = np.zeros((new_size, new_size), dtype=int)
+        
+        copy_size = min(old_size, new_size)
+        new_grid[:copy_size, :copy_size] = self.grid[:copy_size, :copy_size]
+        
+        self.grid = new_grid
+        
+        if self.start_pos:
+            row, col = self.start_pos
+            if row >= new_size or col >= new_size:
+                self.start_pos = None
+                self.grid[self.grid == 3] = 0
+        
+        self.exit_positions = [(r, c) for r, c in self.exit_positions if r < new_size and c < new_size]
+        for r, c in self.exit_positions:
+            self.grid[r, c] = 2
+        
+        self.root.title(f"Creatore Labirinto {self.size}x{self.size}")
+        self.lbl_size.config(text=f"Dimensione: {self.size}x{self.size}")
+        self.setup_plot()
+    
+    def set_mode(self, mode):
+        self.mode = mode
+        if mode == "ostacolo":
+            self.lbl_status.config(text="Modalità: Aggiungi Ostacoli - Clicca o trascina per aggiungere ostacoli")
+        elif mode == "start":
+            self.lbl_status.config(text="Modalità: Imposta Start - Clicca per impostare il punto di partenza")
+        elif mode == "exit":
+            self.lbl_status.config(text="Modalità: Aggiungi Uscita - Clicca o trascina per aggiungere uscite")
+        elif mode == "pulisci":
+            self.lbl_status.config(text="Modalità: Pulisci Cella - Clicca o trascina per pulire celle")
     
     def generate_prolog_file(self):
         if self.start_pos is None:
@@ -150,7 +236,6 @@ class LabirintoCreator:
             f.write(f"num_righe({self.size}).\n")
             f.write(f"num_colonne({self.size}).\n\n")
 
-            # Scambia le coordinate X e Y per corrispondere al formato pos(riga, colonna)
             start_y = self.start_pos[1] + 1
             start_x = self.start_pos[0] + 1
             f.write(f"iniziale(pos({start_x},{start_y})).\n\n")
@@ -166,18 +251,15 @@ class LabirintoCreator:
             for i in range(self.size):
                 for j in range(self.size):
                     if self.grid[i, j] == 1:
-                        # Scambia le coordinate X e Y
                         obst_y = j + 1
                         obst_x = i + 1
                         f.write(f"occupata(pos({obst_x},{obst_y})).\n")
         
         messagebox.showinfo("Successo", "File 'Labirinto/labirinto.pl' generato con successo!")
         
-        # Mostra anteprima del file
         with open('Labirinto/labirinto.pl', 'r') as f:
             content = f.read()
         
-        # Crea una finestra con l'anteprima
         preview = tk.Toplevel(self.root)
         preview.title("Anteprima File Prolog")
         preview.geometry("600x400")
@@ -195,26 +277,25 @@ class LabirintoCreator:
         if not os.path.exists('Labirinto'):
             os.makedirs('Labirinto')
         
-        # Crea una figura separata per il salvataggio
         fig, ax = plt.subplots(figsize=(8, 8))
         ax.set_xlim(0, self.size)
         ax.set_ylim(0, self.size)
-        ax.set_xticks(np.arange(0, self.size+1, 1))
-        ax.set_yticks(np.arange(0, self.size+1, 1))
-        ax.grid(True)
-        ax.set_title("Labirinto")
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_xticks(np.arange(0, self.size+1, 1), minor=True)
+        ax.set_yticks(np.arange(0, self.size+1, 1), minor=True)
+        ax.grid(which='minor', color='gray', linestyle='-', linewidth=0.5)
+        ax.set_title(f"Labirinto {self.size}x{self.size}")
         
-        # Disegna la griglia
         for i in range(self.size):
             for j in range(self.size):
-                if self.grid[i, j] == 1:  # Ostacolo
+                if self.grid[i, j] == 1:
                     ax.add_patch(Rectangle((j, self.size-1-i), 1, 1, facecolor='black'))
-                elif self.grid[i, j] == 2:  # Uscita
+                elif self.grid[i, j] == 2:
                     ax.add_patch(Rectangle((j, self.size-1-i), 1, 1, facecolor='green'))
-                elif self.grid[i, j] == 3:  # Start
+                elif self.grid[i, j] == 3:
                     ax.add_patch(Rectangle((j, self.size-1-i), 1, 1, facecolor='blue'))
         
-        # Salva l'immagine
         plt.savefig('Labirinto/labirinto.png', dpi=300, bbox_inches='tight')
         plt.close(fig)
         
