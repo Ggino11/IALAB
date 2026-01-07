@@ -169,9 +169,9 @@ class BattleshipVisualizerAdvanced:
         
         # Agent Selector
         ttk.Label(control_frame, text="Agente:").pack(side=tk.LEFT, padx=5)
-        self.agent_var = tk.StringVar(value="Agent_Smart.clp")
+        self.agent_var = tk.StringVar(value="Agent_Strategic.clp")
         self.agent_combo = ttk.Combobox(control_frame, textvariable=self.agent_var, state="readonly", width=20)
-        self.agent_combo['values'] = ["Agent_Simple.clp", "Agent_Smart.clp"]
+        self.agent_combo['values'] = ["Agent_Simple.clp", "Agent_Strategic.clp"]
         self.agent_combo.pack(side=tk.LEFT, padx=5)
         
         ttk.Button(control_frame, text="▶ RUN", command=self.run_selected_agent).pack(side=tk.LEFT, padx=10)
@@ -453,9 +453,8 @@ class BattleshipVisualizerAdvanced:
         init_cells = set()
         
         for line in lines:
-            # Parse DEDUCE messages (water deductions)
-            # Regex stricter: capture only coords immediately followed by =water
-            if 'DEDUCE:' in line and 'water' in line:
+            # Parse DEDUCE messages (water deductions) - accept multiple formats
+            if ('DEDUCE:' in line or '[DEDUCE]' in line) and 'water' in line:
                 match = re.search(r'\[(\d+),\s*(\d+)\]\s*=\s*water', line)
                 if match:
                     x, y = int(match.group(1)), int(match.group(2))
@@ -468,10 +467,10 @@ class BattleshipVisualizerAdvanced:
                             self.log_deduce(f"[{x},{y}] = acqua (riga {x} vuota)")
                         elif 'col=0' in line:
                             self.log_deduce(f"[{x},{y}] = acqua (col {y} vuota)")
-                        elif 'riga' in line and 'completa' in line:
-                            self.log_deduce(f"[{x},{y}] = acqua (riga {x} completata)")
-                        elif 'col' in line and 'completa' in line:
-                            self.log_deduce(f"[{x},{y}] = acqua (col {y} completata)")
+                        elif 'riga' in line and ('completa' in line or 'satura' in line):
+                            self.log_deduce(f"[{x},{y}] = acqua (riga {x} satura)")
+                        elif 'col' in line and ('completa' in line or 'satura' in line):
+                            self.log_deduce(f"[{x},{y}] = acqua (col {y} satura)")
                         elif 'attorno' in line:
                             # Extract ship type
                             ship_match = re.search(r'attorno (\w+)\[(\d+),(\d+)\]', line)
@@ -485,15 +484,29 @@ class BattleshipVisualizerAdvanced:
                         time.sleep(0.08)  # Slow animation for deductions
                 continue
             
-            # Parse INIT (k-cell iniziali)
-            if 'INIT:' in line:
-                match = re.search(r'INIT: \[(\d+),(\d+)\] = (\w+)', line)
+            # Parse INIT (k-cell iniziali) - ONLY for initial cells, NOT [LEARN]
+            if 'INIT:' in line or '[INIT]' in line:
+                match = re.search(r'\[(\d+),\s*(\d+)\]\s*=\s*(\w+)', line)
                 if match:
                     x, y = int(match.group(1)), int(match.group(2))
                     content = match.group(3)
                     init_cells.add((x, y))
                     self.update_cell(self.agent_canvas, self.agent_cells, x, y, 'init', content)
                     self.log_deduce(f"[INIT] ({x},{y}) = {content}")
+                continue
+            
+            # Parse [LEARN] (discovered during gameplay via FIRE) - show as ship or water
+            if '[LEARN]' in line:
+                match = re.search(r'\[(\d+),\s*(\d+)\]\s*=\s*(\w+)', line)
+                if match:
+                    x, y = int(match.group(1)), int(match.group(2))
+                    content = match.group(3)
+                    if content == 'water':
+                        self.update_cell(self.agent_canvas, self.agent_cells, x, y, 'deduced_water')
+                        self.log_deduce(f"[{x},{y}] = acqua (scoperta)")
+                    else:
+                        # It's a ship part discovered by FIRE - already handled by FIRE parsing
+                        pass
                 continue
             
             # Parse FIRE - more flexible matching
