@@ -1,16 +1,15 @@
-;; ================================================================
+
 ;; AGENTE STRATEGICO - Battaglia Navale
 ;; Distinzione tra NAVI CERTE e IPOTESI:
 ;; - CERTA = scoperta via FIRE o forzata (adiacente a LEFT/RIGHT/TOP/BOT)
 ;; - IPOTESI = guess probabilistico (puo essere sbagliata)
 ;; Completamento riga/colonna conta SOLO navi certe!
-;; ================================================================
+
 
 (defmodule AGENT (import MAIN ?ALL) (import ENV ?ALL) (export ?ALL))
 
-;; ================================================================
+
 ;; TEMPLATE MEMORIA AGENTE
-;; ================================================================
 
 ;; r-cell con slot certain: yes = certa, no = ipotesi
 (deftemplate r-cell 
@@ -28,9 +27,8 @@
 (deftemplate row-complete (slot row))
 (deftemplate col-complete (slot col))
 
-;; ================================================================
+
 ;; FUNZIONI HELPER
-;; ================================================================
 
 ;; Conta SOLO navi CERTE in una riga
 (deffunction count-certain-ships-in-row (?row)
@@ -111,9 +109,8 @@
     )
 )
 
-;; ================================================================
+
 ;; DEBUG (solo all'inizio)
-;; ================================================================
 
 (defrule debug-print-visible-facts
     (declare (salience 2000))
@@ -134,9 +131,8 @@
     (printout t "============================" crlf)
 )
 
-;; ================================================================
+
 ;; FASE 0: COPIA K-CELL IN R-CELL (CERTE!)
-;; ================================================================
 
 ;; CONTINUOUS LEARNING: copia k-cell appena appaiono (anche dopo FIRE)
 (defrule learn-kcell-continuously
@@ -148,9 +144,9 @@
     (printout t ">>> CERTA: [" ?x "," ?y "] = " ?c crlf)
 )
 
-;; ================================================================
+
 ;; FASE 1: DEDUZIONI ACQUA (tutte CERTE)
-;; ================================================================
+
 
 (defrule deduce-row-zero
     (declare (salience 500))
@@ -305,11 +301,11 @@
 
 
 
-;; ================================================================
+
 ;; FASE 1.5: CHECK RIGA/COLONNA SATURA (SOLO NAVI CERTE!)
 ;; La regola scatta quando esiste almeno una nave certa nella riga
 ;; e il conteggio raggiunge il target
-;; ================================================================
+
 
 ;; K=0 rows/cols are automatically complete
 (defrule check-row-complete-zero
@@ -356,11 +352,11 @@
     (printout t "*** COLONNA " ?y " SATURA! (" (count-certain-ships-in-col ?y) "/" ?expected " navi CERTE) ***" crlf)
 )
 
-;; ================================================================
+
 ;; FASE 1.6: DEDUZIONE CELLE FORZATE
 ;; Se righe/colonne hanno esattamente N celle sconosciute e N navi mancanti,
 ;; quelle celle DEVONO essere navi (GUESS CERTO)
-;; ================================================================
+
 
 ;; Deduzione cella forzata in RIGA
 ;; Se remaining_ships == unknown_cells, le celle sconosciute DEVONO essere navi
@@ -398,7 +394,7 @@
     (printout t "  DEDUCE FORZATO: col " ?y " ha " (count-unknown-in-col ?y) " celle = " (remaining-ships-in-col ?y ?expected) " navi -> [" ?x "," ?y "]=nave" crlf)
 )
 ;; FASE 1.6: DEDUZIONE ACQUA IN RIGHE/COLONNE SATURE
-;; ================================================================
+
 
 (defrule deduce-water-row-complete
     (declare (salience 290))
@@ -420,9 +416,9 @@
     (printout t "  DEDUCE: col " ?y " satura -> [" ?x "," ?y "]=water" crlf)
 )
 
-;; ================================================================
+
 ;; FASE 1.7: UNGUESS IPOTESI IN RIGHE/COLONNE SATURE
-;; ================================================================
+
 
 (defrule unguess-hypothesis-row-saturated
     (declare (salience 285))
@@ -468,9 +464,9 @@
     (pop-focus)
 )
 
-;; ================================================================
+
 ;; FASE 2: AZIONI
-;; ================================================================
+
 
 ;; GUESS su navi note (gia in r-cell) - PRIORITÀ ALTA
 (defrule action-guess-known
@@ -697,9 +693,9 @@
     (pop-focus)
 )
 
-;; ================================================================
+
 ;; CHIUSURA
-;; ================================================================
+
 
 (defrule action-solve-no-guesses
     (declare (salience 5))

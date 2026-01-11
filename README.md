@@ -1,61 +1,137 @@
-# IALAB
-This repository contains projects on logic-based problem solving using Prolog and Answer Set Programming (Clingo). It includes implementations of search algorithms and constraint-based scheduling solutions applied to different domains such as pathfinding and timetabling.
+# 🧠 IALAB - Intelligenza Artificiale e Laboratorio
 
-### Funzionamento ida star
+Progetto d'esame per il corso di **Intelligenza Artificiale e Laboratorio** dell'Università di Torino.
+
+Repository contenente implementazioni di algoritmi di ricerca in Prolog e soluzioni di scheduling con Answer Set Programming (Clingo/ASP).
+
+---
+
+## 📂 Struttura del Progetto
+
+| Cartella | Descrizione | Tecnologia |
+|----------|-------------|------------|
+| [`Labirinto/`](./Labirinto/) | Risoluzione di labirinti con A* e IDA* | Prolog |
+| [`Puzzle_8/`](./Puzzle_8/) | Risoluzione del puzzle dell'8 con A* e IDA* | Prolog |
+| [`CalendarioMaster/`](./CalendarioMaster/) | Generazione calendario Master in Comunicazione Digitale | Clingo/ASP |
+| [`CalendatrioSport/`](./CalendatrioSport/) | Generazione calendario competizione sportiva | Clingo/ASP |
+| [`battle-2025/`](./battle-2025/) | Agente per battaglia navale | CLIPS |
+
+---
+
+## 🎯 Attività 1: Prolog - Algoritmi di Ricerca
+
+Implementazione e confronto delle strategie **A*** e **IDA*** sui seguenti domini:
+
+### 🧩 Labirinto
+
+Labirinto con almeno due uscite (non necessariamente raggiungibili).
+
+#### Risultati Sperimentali
+
+| Labirinto | A* (passi/tempo) | IDA* (passi/tempo) | Note |
+|-----------|------------------|---------------------|------|
+| 10×10 | 9 / 0.013s | 9 / 0.138s | ✅ Percorso ottimale |
+| 20×20 | 36 / 0.015s | 36 / 0.022s | ✅ Percorso ottimale |
+| 30×30 | — | — | ⚠️ Uscite non raggiungibili |
+| 50×50 | 37 / 0.036s | 37 / 0.111s | ✅ Percorso ottimale |
+| 100×100 | 103 / 0.247s | 103 / 1.031s | ✅ Percorso ottimale |
+
+📖 **[Documentazione completa →](./Labirinto/README.md)**
+
+### 🔢 Puzzle dell'8
+
+Puzzle 3×3 con 8 tessere numerate e una casella vuota.
+
+#### Risultati Sperimentali
+
+| Algoritmo | Mosse | Tempo |
+|-----------|-------|-------|
+| IDA* | 20 | 0.302s |
+| A* | 20 | 2.298s |
+
+> **Nota**: Per il Puzzle-8, IDA* risulta più veloce di A* grazie al minor overhead di gestione della memoria.
+
+---
+
+## 🎯 Attività 2: Clingo/ASP - Scheduling
+
+### 🏆 Calendario Sportivo
+
+Generazione del calendario del primo turno di una competizione sportiva con:
+- 32 squadre divise in 6 zone continentali
+- 8 gironi da 4 squadre
+- Vincoli su fasce (teste di serie, prima fascia, seconda fascia, underdog)
+- Almeno 3 zone continentali per girone
+
+### 📚 Calendario Master
+
+Generazione del calendario del "Master in Progettazione della Comunicazione Digitale" con:
+- 24 settimane di lezioni (venerdì e sabato)
+- 2 settimane full-time (7ª e 16ª)
+- 24 insegnamenti con vincoli di propedeuticità
+- Vincoli su docenti (max 4 ore/giorno)
+
+---
+
+## 🚀 Come Eseguire
+
+### Prerequisiti
+
+- [SWI-Prolog](https://www.swi-prolog.org/) per i progetti Prolog
+- [Clingo](https://potassco.org/clingo/) per i progetti ASP
+- [CLIPS](http://www.clipsrules.net/) per la battaglia navale
+- Python 3.x per il generatore di labirinti
+
+### Esempio: Labirinto
+
+```bash
+cd Labirinto
+swipl -g "[labirinto10x10], [azioni], [heuristic], [ida_star], [a_star], [main], main, halt."
 ```
-ida_star(Sol, Costo)
-    ↓
-ida_loop([[Iniziale]], H0, Sol, Costo)
-    ↓
-bounded_search([...], Threshold, Result, NewThreshold)
-    ↓
-   ↳ se trovata → Result = found(Sol, Costo)
-   ↳ se no → ida_loop(..., NewThreshold, ...)
+
+### Esempio: Puzzle 8
+
+```bash
+cd Puzzle_8
+swipl -g "[main], main."
 ```
-Moves set to resolve puzzle: Move tile 2 from position 4 to position 7 (empty)
-- Move tile 4 from position 7 to position 8 
-- Move tile 6 from position 8 to position 5 
-- Move tile 2 from position 5 to position 4 
-- Move tile 3 from position 4 to position 1 
-- Move tile 1 from position 1 to position 2 
-- Move tile 2 from position 2 to position 5 
-- Move tile 3 from position 5 to position 4 
-- Move tile 5 from position 4 to position 3 
-- Move tile 7 from position 3 to position 0 
-- Move tile 1 from position 0 to position 1 
-- Move tile 2 from position 1 to position 2 
-- Move tile 3 from position 2 to position 5 
-- Move tile 5 from position 5 to position 4 
-- Move tile 4 from position 4 to position 7 
-- Move tile 8 from position 7 to position 6 
-- Move tile 7 from position 6 to position 3 
-- Move tile 4 from position 3 to position 4 
-- Move tile 5 from position 4 to position 5 
-- Move tile 6 from position 5 to position 8 
+---
 
- Total moves: 20 
+## 🎯 Attività 3: CLIPS - Battaglia Navale
 
-**SolutionPath =**
-- [[7,3,1,5,e,6,8,2,4],
-- [7,3,1,5,2,6,8,e,4],
-- [7,3,1,5,2,6,8,4,e],
-- [7,3,1,5,2,e,8,4,6],
-- [7,3,1,5,e,2,8,4,6],
-- [7,e,1,5,3,2,8,4,6],
-- [7,1,e,5,3,2,8,4,6],
-- [7,1,2,5,3,e,8,4,6],
-- [7,1,2,5,e,3,8,4,6],
-- [7,1,2,e,5,3,8,4,6],
-- [e,1,2,7,5,3,8,4,6],
-- [1,e,2,7,5,3,8,4,6],
-- [1,2,e,7,5,3,8,4,6],
-- [1,2,3,7,5,e,8,4,6],
-- [1,2,3,7,e,5,8,4,6],
-- [1,2,3,7,4,5,8,e,6],
-- [1,2,3,7,4,5,e,8,6],
-- [1,2,3,e,4,5,7,8,6],
-- [1,2,3,4,e,5,7,8,6],
-- [1,2,3,4,5,e,7,8,6],
-- [1,2,3,4,5,6,7,8,e]]
-  
-**Cost = 20**
+Progetto di un agente intelligente per il gioco della battaglia navale.
+
+### Strategie Implementate
+
+1.  **Agente Semplice (`Agent_Simple.clp`)**: Approccio greedy che spara nelle zone a più alta probabilità e utilizza deduzioni base (acqua intorno alle navi colpite).
+2.  **Agente Strategico (`Agent_strategic.clp`)**: Sistema esperto a fasi con:
+    *   Ragionamento su certezze vs ipotesi
+    *   Regole di "chiusura" per righe e colonne sature
+    *   Deduzioni forzate (celle ignote = navi mancanti)
+    *   Backtracking logico (`unguess`)
+
+### Esempio Esecuzione
+
+```bash
+cd battle-2025
+# Esecuzione Agente Strategico dentro clips
+(load 0_Main.clp)
+(load 1_Env.clp)
+(load mapEnviroment.clp) ; Carica scenario
+(load Agent_strategic.clp)
+(reset)
+(run)
+```
+
+---
+
+## 👥 Autore
+
+Simone Amitrano,
+Progetto sviluppato per il corso IALAB - Università di Torino
+
+---
+
+## 📝 Licenza
+
+Progetto a scopo didattico.

@@ -1,30 +1,27 @@
-;; ================================================================
+
 ;; AGENTE SEMPLICE - Battaglia Navale
 ;; Strategia: Fire prima, deduzioni, tracciamento righe complete
-;; ================================================================
+
 
 (defmodule AGENT (import MAIN ?ALL) (import ENV ?ALL) (export ?ALL))
 
-;; ================================================================
+
 ;; TEMPLATE MEMORIA AGENTE
-;; ================================================================
+
 
 (deftemplate r-cell (slot x) (slot y) (slot content))
 (deftemplate my-guess (slot x) (slot y))
 (deftemplate my-fire (slot x) (slot y))
 (deftemplate initialized (slot done))
 
-;; NUOVO: Traccia righe e colonne "complete" (trovate tutte le navi)
+;; Traccia righe e colonne "complete" (trovate tutte le navi)
 (deftemplate row-complete (slot row))
 (deftemplate col-complete (slot col))
 
-;; Contatori navi trovate per riga/colonna
-(deftemplate ship-count-row (slot row) (slot count))
-(deftemplate ship-count-col (slot col) (slot count))
 
-;; ================================================================
+
 ;; FUNZIONI HELPER
-;; ================================================================
+
 
 ;; Conta quante navi (r-cell != water) ci sono in una riga
 (deffunction count-ships-in-row (?row)
@@ -46,9 +43,9 @@
     ?count
 )
 
-;; ================================================================
+
 ;; DEBUG (solo all'inizio)
-;; ================================================================
+
 
 (defrule debug-print-visible-facts
     (declare (salience 2000))
@@ -69,9 +66,9 @@
     (printout t "============================" crlf)
 )
 
-;; ================================================================
+
 ;; FASE 0: COPIA K-CELL IN R-CELL
-;; ================================================================
+
 
 (defrule init-copy-kcell
     (declare (salience 1000))
@@ -82,9 +79,8 @@
     (printout t ">>> Nuova conoscenza: r-cell [" ?x "," ?y "] = " ?c crlf)
 )
 
-;; ================================================================
+
 ;; FASE 1: DEDUZIONI
-;; ================================================================
 
 (defrule deduce-row-zero
     (declare (salience 500))
@@ -203,10 +199,10 @@
     (printout t "  DEDUCE: attorno MID[" ?x "," ?y "] -> [" ?nx "," ?ny "]=water" crlf)
 )
 
-;; ================================================================
+
 ;; FASE 1.5: CONTROLLO RIGHE/COLONNE COMPLETE
 ;; Se abbiamo trovato tutte le navi di una riga, marchiamola
-;; ================================================================
+
 
 (defrule check-row-complete
     (declare (salience 300))
@@ -230,9 +226,9 @@
     (printout t "*** Colonna " ?y " COMPLETA! (trovate " ?expected " navi) ***" crlf)
 )
 
-;; ================================================================
+
 ;; FASE 2: AZIONI
-;; ================================================================
+
 
 ;; FIRE su celle ad alta probabilità
 (defrule action-fire-high-priority
@@ -351,68 +347,44 @@
     (pop-focus)
 )
 
-;; GUESS PRIORITIZZATI - Tier 1: Alta probabilità (row+col >= 6)
-(defrule action-guess-high-probability
-    (declare (salience 45))
-    (status (step ?s) (currently running))
-    (moves (guesses ?g&:(> ?g 0)))
-    (k-per-row (row ?x) (num ?rn&:(> ?rn 0)))
-    (k-per-col (col ?y) (num ?cn&:(> ?cn 0)))
-    (test (>= (+ ?rn ?cn) 6))  ; Alta probabilità: somma >= 6
-    (not (row-complete (row ?x)))
-    (not (col-complete (col ?y)))
-    (not (r-cell (x ?x) (y ?y)))
-    (not (my-guess (x ?x) (y ?y)))
-=>
-    (assert (exec (step ?s) (action guess) (x ?x) (y ?y)))
-    (assert (my-guess (x ?x) (y ?y)))
-    (printout t "Step " ?s ": GUESS alta prob [" ?x "," ?y "] (row=" ?rn " col=" ?cn " sum=" (+ ?rn ?cn) ")" crlf)
-    (pop-focus)
-)
-
-;; GUESS PRIORITIZZATI - Tier 2: Media probabilità (row+col >= 4)
-(defrule action-guess-medium-probability
-    (declare (salience 42))
-    (status (step ?s) (currently running))
-    (moves (guesses ?g&:(> ?g 0)))
-    (k-per-row (row ?x) (num ?rn&:(> ?rn 0)))
-    (k-per-col (col ?y) (num ?cn&:(> ?cn 0)))
-    (test (>= (+ ?rn ?cn) 4))
-    (test (< (+ ?rn ?cn) 6))   ; Media: 4 <= somma < 6
-    (not (row-complete (row ?x)))
-    (not (col-complete (col ?y)))
-    (not (r-cell (x ?x) (y ?y)))
-    (not (my-guess (x ?x) (y ?y)))
-=>
-    (assert (exec (step ?s) (action guess) (x ?x) (y ?y)))
-    (assert (my-guess (x ?x) (y ?y)))
-    (printout t "Step " ?s ": GUESS media prob [" ?x "," ?y "] (row=" ?rn " col=" ?cn " sum=" (+ ?rn ?cn) ")" crlf)
-    (pop-focus)
-)
-
-;; GUESS PRIORITIZZATI - Tier 3: Bassa probabilità (row+col >= 2)
-(defrule action-guess-low-probability
+;; GUESS GENERALE (Semplificato)
+;; Sceglie una qualsiasi cella con almeno un po' di probabilità (sum >= 2)
+;; La selezione sarà gestita dalla strategia di attivazione di CLIPS (spesso LIFO/casual)
+;; GUESS INTELLIGENTE (Max Priority)
+;; Sceglie la cella con la somma (K-row + K-col) più alta
+(defrule action-guess-smart
     (declare (salience 40))
     (status (step ?s) (currently running))
     (moves (guesses ?g&:(> ?g 0)))
+    
+    ;; Candidato (x, y)
     (k-per-row (row ?x) (num ?rn&:(> ?rn 0)))
     (k-per-col (col ?y) (num ?cn&:(> ?cn 0)))
-    (test (>= (+ ?rn ?cn) 2))
-    (test (< (+ ?rn ?cn) 4))   ; Bassa: 2 <= somma < 4
     (not (row-complete (row ?x)))
     (not (col-complete (col ?y)))
     (not (r-cell (x ?x) (y ?y)))
     (not (my-guess (x ?x) (y ?y)))
+    
+    ;; Verifica che non esista una cella (x2, y2) MIGLIORE
+    (not (and 
+        (k-per-row (row ?x2) (num ?rn2))
+        (k-per-col (col ?y2) (num ?cn2))
+        (not (row-complete (row ?x2)))
+        (not (col-complete (col ?y2)))
+        (not (r-cell (x ?x2) (y ?y2)))
+        (not (my-guess (x ?x2) (y ?y2)))
+        (test (> (+ ?rn2 ?cn2) (+ ?rn ?cn)))
+    ))
 =>
     (assert (exec (step ?s) (action guess) (x ?x) (y ?y)))
     (assert (my-guess (x ?x) (y ?y)))
-    (printout t "Step " ?s ": GUESS bassa prob [" ?x "," ?y "] (row=" ?rn " col=" ?cn " sum=" (+ ?rn ?cn) ")" crlf)
+    (printout t "Step " ?s ": GUESS smart [" ?x "," ?y "] (sum=" (+ ?rn ?cn) ")" crlf)
     (pop-focus)
 )
 
-;; ================================================================
+
+
 ;; CHIUSURA
-;; ================================================================
 
 (defrule action-solve-no-guesses
     (declare (salience 5))
